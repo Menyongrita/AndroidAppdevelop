@@ -1,47 +1,67 @@
-import 'package:flutter/services.dart' show rootBundle;
-import 'package:excel/excel.dart';
+import 'package:flutter/material.dart';
+import 'student.dart'; // 👈 adjust if your file name is different
 
-class Student {
-  final String name;
-  final int? score;
-
-  Student(this.name, this.score);
-
-  // Check if the student has a score
-  bool get hasScore => score != null;
-
-  // Calculate grade
-  String get grade {
-    if (score == null) return "No Score";
-    if (score! >= 90) return "A";
-    if (score! >= 80) return "B";
-    if (score! >= 70) return "C";
-    if (score! >= 60) return "D";
-    return "F";
-  }
-
-  // Format result
-  String get formattedResult =>
-      hasScore ? "$name scored $score : Grade $grade" : "No score for $name";
+void main() {
+  runApp(const StudentApp());
 }
 
-// Read Excel from assets
-Future<List<Student>> readStudentsFromAssets() async {
-  final bytes = await rootBundle.load('assets/excel/students.xlsx');
-  final excel = Excel.decodeBytes(bytes.buffer.asUint8List());
+class StudentApp extends StatelessWidget {
+  const StudentApp({super.key});
 
-  List<Student> students = [];
-
-  for (var table in excel.tables.keys) {
-    var sheet = excel.tables[table];
-    for (var row in sheet!.rows.skip(1)) {
-      final name = row[0]?.value.toString() ?? "Unknown";
-      final score = (row[1]?.value != null && row[1]!.value.toString().isNotEmpty)
-          ? int.tryParse(row[1]!.value.toString())
-          : null;
-
-      students.add(Student(name, score));
-    }
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: const StudentScreen(),
+    );
   }
-  return students;
+}
+
+class StudentScreen extends StatefulWidget {
+  const StudentScreen({super.key});
+
+  @override
+  State<StudentScreen> createState() => _StudentScreenState();
+}
+
+class _StudentScreenState extends State<StudentScreen> {
+  late Future<List<Student>> students;
+
+  @override
+  void initState() {
+    super.initState();
+    students = readStudentsFromAssets();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Student Grades")),
+      body: FutureBuilder<List<Student>>(
+        future: students,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(child: Text("Error: ${snapshot.error}"));
+          }
+
+          final data = snapshot.data ?? [];
+
+          return ListView.builder(
+            itemCount: data.length,
+            itemBuilder: (context, index) {
+              final student = data[index];
+              return ListTile(
+                title: Text(student.name),
+                subtitle: Text(student.formattedResult),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
 }
