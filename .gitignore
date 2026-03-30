@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Gradle files
 .gradle/
 build/
@@ -34,6 +35,8 @@ google-services.json
 # Android Profiling
 *.hprof
 =======
+=======
+>>>>>>> cf7a18c (Initial commit for project)
 # Miscellaneous
 *.class
 *.log
@@ -79,4 +82,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+<<<<<<< HEAD
+>>>>>>> cf7a18c (Initial commit for project)
+=======
 >>>>>>> cf7a18c (Initial commit for project)
